@@ -20,7 +20,7 @@
         simplyCountdown;
 
     /**
-     * Function that merges user parameters with defaults.
+     * Function that merge user parameters with defaults one.
      * @param out
      * @returns {*|{}}
      */
@@ -50,7 +50,7 @@
     };
 
     /**
-     * Function that creates a countdown section.
+     * Function that create a countdown section
      * @param countdown
      * @param parameters
      * @param typeClass
@@ -86,7 +86,7 @@
     };
 
     /**
-     * Function that creates full countdown DOM elements calling createCountdownElt.
+     * Function that create full countdown DOM elements calling createCountdownElt
      * @param parameters
      * @param countdown
      * @returns {{days: (*|Element), hours: (*|Element), minutes: (*|Element), seconds: (*|Element)}}
@@ -109,15 +109,15 @@
     };
 
     /**
-     * simplyCountdown, create and display the countdown.
+     * simplyCountdown, create and display the coundtown.
      * @param elt
      * @param args (parameters)
      */
     simplyCountdown = function (elt, args) {
         var parameters = extend({
-                year: 1995,
-                month: 7,
-                day: 20,
+                year: 2015,
+                month: 6,
+                day: 28,
                 hours: 0,
                 minutes: 0,
                 seconds: 0,
@@ -142,16 +142,18 @@
                 zeroPad: false
             }, args),
             interval,
-            startDate,
+            targetDate,
+            targetTmpDate,
             now,
-            elapsedSeconds,
+            nowUtc,
+            secondsLeft,
             days,
             hours,
             minutes,
             seconds,
             cd = document.querySelectorAll(elt);
 
-        startDate = new Date(
+        targetTmpDate = new Date(
             parameters.year,
             parameters.month - 1,
             parameters.day,
@@ -159,6 +161,19 @@
             parameters.minutes,
             parameters.seconds
         );
+
+        if (parameters.enableUtc) {
+            targetDate = new Date(
+                targetTmpDate.getUTCFullYear(),
+                targetTmpDate.getUTCMonth(),
+                targetTmpDate.getUTCDate(),
+                targetTmpDate.getUTCHours(),
+                targetTmpDate.getUTCMinutes(),
+                targetTmpDate.getUTCSeconds()
+            );
+        } else {
+            targetDate = targetTmpDate;
+        }
 
         Array.prototype.forEach.call(cd, function (countdown) {
             var fullCountDown = createElements(parameters, countdown),
@@ -171,17 +186,24 @@
                     secondWord;
 
                 now = new Date();
-                elapsedSeconds = (now - startDate) / 1000;
+                if (parameters.enableUtc) {
+                    nowUtc = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+                        now.getHours(), now.getMinutes(), now.getSeconds());
+                    secondsLeft = (targetDate - nowUtc.getTime()) / 1000;
 
-                if (elapsedSeconds > 0) {
-                    days = parseInt(elapsedSeconds / 86400, 10);
-                    elapsedSeconds = elapsedSeconds % 86400;
+                } else {
+                    secondsLeft = (targetDate - now.getTime()) / 1000;
+                }
 
-                    hours = parseInt(elapsedSeconds / 3600, 10);
-                    elapsedSeconds = elapsedSeconds % 3600;
+                if (secondsLeft > 0) {
+                    days = parseInt(secondsLeft / 86400, 10);
+                    secondsLeft = secondsLeft % 86400;
 
-                    minutes = parseInt(elapsedSeconds / 60, 10);
-                    seconds = parseInt(elapsedSeconds % 60, 10);
+                    hours = parseInt(secondsLeft / 3600, 10);
+                    secondsLeft = secondsLeft % 3600;
+
+                    minutes = parseInt(secondsLeft / 60, 10);
+                    seconds = parseInt(secondsLeft % 60, 10);
                 } else {
                     days = 0;
                     hours = 0;
